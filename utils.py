@@ -110,11 +110,14 @@ def db_select_user(email, password):
         row = cur.fetchall()
         if email == row[0][3] and check_password_hash(row[0][4], password):
             msg = f'Bienvenido/a {row[0][1]} {row[0][2]}'
+            is_ok = True
         else:
-            msg = 'Usuario no registrado'
+            msg = 'Correo o contraseña incorrectos'
+            is_ok = False
     except:
         msg = 'Usuario no registrado'
-    return msg
+        is_ok = False
+    return msg, is_ok
     
 
 def db_update_task(task_id, title, description, end_date, start_date, time, id_priority, is_completed, user_user_id):

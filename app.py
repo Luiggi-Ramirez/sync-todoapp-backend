@@ -33,13 +33,19 @@ def login():
         data = request.json
         email = data['email']
         password = data['password']
-        msg = utils.db_select_user(email, password)
+        msg, is_ok = utils.db_select_user(email, password)
     elif request.method == 'GET':
         msg = 'Login'
-    return {
-        "code": 200,
-        "msg": msg
-    }
+    if is_ok:
+        return {
+            "code": 200,
+            "msg": msg
+        }
+    else:
+        return {
+            "code": 401,
+            "msg": msg
+        }, 401
 
 
 @app.route(f'{PATH_BASE_API}/user/create', methods=['POST', 'GET'])
