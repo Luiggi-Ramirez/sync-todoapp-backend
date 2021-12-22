@@ -3,10 +3,10 @@ from werkzeug.security import generate_password_hash, check_password_hash
 
 try:
     conn = mysql.connector.connect(
-        host = 'localhost',
+        host = '192.168.100.50',
         port = 3306,
-        user = 'root',
-        password = 'adminNeos@20',
+        user = 'admin',
+        password = 'admin',
         db = 'todo_app'
     )
     cur = conn.cursor()
