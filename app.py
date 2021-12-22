@@ -2,7 +2,9 @@ import datetime
 import utils
 from flask import Flask, request
 
-created = datetime.date.today()
+created = datetime.datetime.now()
+
+# print(created)
 
 PATH_BASE_API = '/api/v1'
 
@@ -40,7 +42,6 @@ def login():
     }
 
 
-# Ruta para crear usuario
 @app.route(f'{PATH_BASE_API}/user/create', methods=['POST', 'GET'])
 def create_user():
     """Funtion to recive a json with name, last_name, email, password and confirmation password and send it to the database
@@ -66,7 +67,6 @@ def create_user():
     }
 
 
-# Ruta para crear una tarea pasandole el usuarios_user_id de la tabla tareas
 @app.route(f'{PATH_BASE_API}/task/create/<int:usuarios_user_id>', methods=['POST', 'GET'])
 def create_task(usuarios_user_id):
     """Funtion to recive a json with title, description, end day, start day, time, id priority, if is completed and send it to the database
@@ -98,7 +98,6 @@ def create_task(usuarios_user_id):
     }
 
 
-# Ruta para mostrar tareas pasandole usuarios_user_id de la tabla tareas
 @app.route(f'{PATH_BASE_API}/tasks/all/<int:usuarios_user_id>', methods=['GET'])
 def show_tasks(usuarios_user_id):
     """Funtion to recive tasks from the database
@@ -133,7 +132,6 @@ def show_tasks(usuarios_user_id):
     return response
 
 
-# Ruta para actualizar la tarea pasandole el usuarios_user_id y el id_user de la tabla tareas
 @app.route(f'{PATH_BASE_API}/task/update/<int:usuarios_user_id>/<int:id_user>', methods=['POST', 'GET'])
 def update_task(id_user, usuarios_user_id):
     """Funtion to recive a json with info to update a task and send it to the database
@@ -160,14 +158,13 @@ def update_task(id_user, usuarios_user_id):
         is_completed = data['is_completed']
         msg = utils.db_update_task(id_user, title, description, end_date, start_date, time, id_priority, is_completed, usuarios_user_id)
     elif request.method == 'GET':
-        msg = 'Actualiza una tareas'
+        msg = 'Actualiza una tarea'
     return {
         "code": 200,
         "msg": msg
     }    
 
 
-# Ruta para eliminar la tarea pasandole el id_user y el usuarios_user_id de la tabla tareas
 @app.route(f'{PATH_BASE_API}/task/delete/<int:usuarios_user_id>/<int:id_user>', methods=['GET', 'DELETE'])
 def delete_task(usuarios_user_id, id_user):
     """Funtion to delete a task from the database
