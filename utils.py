@@ -149,7 +149,7 @@ def db_update_task(task_id, title, description, end_date, start_date, time, id_p
         A confirmation message    
     """
     try:
-        query = "UPDATE `task` SET `title` = %s, `description` = %s, `end_date` = %s, `start_date` = %s, `created_time` = %s, `is_complete` = %s, `priority_priority_id` = %s WHERE `task_id` = %s AND `user_user_id`= %s"
+        query = "UPDATE `task` SET `title` = %s, `description` = %s, `end_date` = %s, `start_date` = %s, `created_time` = %s, `is_complete` = %s, `priority_priority_id` = %s WHERE `task_id` = %s AND `users_user_id`= %s"
         parameters = (title, description, end_date, start_date, time, is_completed, id_priority, task_id, user_user_id)
         cur.execute(query, parameters)
         conn.commit()
@@ -172,7 +172,7 @@ def db_get_tasks(user_user_id):
         A list with tuples of tasks
     """
     try:
-        query = "SELECT * FROM `task` WHERE `user_user_id` = %s"
+        query = "SELECT * FROM `task` WHERE `users_user_id` = %s"
         parameters = (user_user_id,)
         cur.execute(query, parameters)
         data = cur.fetchall()
@@ -196,7 +196,7 @@ def db_delete_task(user_user_id, task_id):
         A confirmation message    
     """
     try:
-        query = "DELETE FROM `task` WHERE `user_user_id` = %s AND `task_id` = %s"
+        query = "DELETE FROM `task` WHERE `users_user_id` = %s AND `task_id` = %s"
         parameters = (user_user_id, task_id)
         cur.execute(query, parameters)
         conn.commit()
