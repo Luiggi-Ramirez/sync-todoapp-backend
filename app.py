@@ -2,10 +2,6 @@ import datetime
 import utils
 from flask import Flask, request
 
-created = datetime.datetime.now()
-
-# print(created)
-
 PATH_BASE_API = '/api/v1'
 
 app = Flask(__name__)
@@ -58,6 +54,7 @@ def create_user():
         A json with info about the send of user 
     """
     if request.method == 'POST':
+        created = datetime.datetime.now()
         data = request.json
         name = data['name']
         last_name = data['last_name']
@@ -104,8 +101,45 @@ def create_task(usuarios_user_id):
     }
 
 
-@app.route(f'{PATH_BASE_API}/tasks/all/<int:usuarios_user_id>', methods=['GET'])
-def show_tasks(usuarios_user_id):
+@app.route(f'{PATH_BASE_API}/task/show/<int:task_id>', methods=['GET'])
+def show_task(task_id):
+    """Funtion to recive a task from the database
+    Parameters
+    ----------
+    id_task: int
+        Id task founded in table task
+    ---------
+    Return
+    ---------
+    json: json
+        A json with the task
+    """
+    lst = utils.db_get_task(task_id)
+    if lst == []:
+        return {
+            "code": 404,
+            "msg": 'Tarea no encontrada'
+        }, 404
+    else:
+        for data in lst:
+            task = {
+                "task_id": task_id,
+                "title": data[1],
+                "description": data[2],
+                "end_date" : str(data[3]),
+                "start_date" : str(data[4]),
+                "time": str(data[5]),
+                "id_priority" : data[6],
+                "is_completed": data[7]
+            }
+        return {
+            "code": 200,
+            "task": task
+        }
+
+
+@app.route(f'{PATH_BASE_API}/tasks/all/<int:users_user_id>', methods=['GET'])
+def show_tasks(users_user_id):
     """Funtion to recive tasks from the database
     Parameters
     ----------
@@ -117,36 +151,39 @@ def show_tasks(usuarios_user_id):
     json: json
         A json with the tasks
     """
-    lst = utils.db_get_tasks(usuarios_user_id)
+    lst = utils.db_get_tasks(users_user_id)
     new_lst = []
-    for data in lst:
-        task = {
-            "id_user": usuarios_user_id,
-            "title": data[1],
-            "description": data[2],
-            "end_date" : str(data[3]),
-            "start_date" : str(data[4]),
-            "time": str(data[5]),
-            "id_priority" : data[6],
-            "is_completed": data[7]
+    if lst == []:
+        return {
+            "code": 404,
+            "msg" : 'Tarea no encontrada'
+        }, 404
+    else:
+        for data in lst:
+            task = {
+                "id_user": users_user_id,
+                "title": data[1],
+                "description": data[2],
+                "end_date" : str(data[3]),
+                "start_date" : str(data[4]),
+                "time": str(data[5]),
+                "id_priority" : data[6],
+                "is_completed": data[7]
+            }
+            new_lst.append(task)
+        return {
+            "code": 200,
+            "tasks": new_lst
         }
-        new_lst.append(task)
-    response = {
-        "code": 200,
-        "tasks": new_lst
-    }
-    return response
+    
 
-
-@app.route(f'{PATH_BASE_API}/task/update/<int:usuarios_user_id>/<int:id_user>', methods=['POST', 'GET'])
-def update_task(id_user, usuarios_user_id):
+@app.route(f'{PATH_BASE_API}/task/update/<int:task_id>', methods=['POST', 'GET'])
+def update_task(task_id):
     """Funtion to recive a json with info to update a task and send it to the database
     Parameters
     ----------
-    id_user: int
-        Id user founded in table task
-    usuarios_user_id: int
-        Id user founded in table user
+    task_id: int
+        Id task founded in table task
     ---------
     Return
     ---------
@@ -162,24 +199,28 @@ def update_task(id_user, usuarios_user_id):
         time = data['time']
         id_priority = data['id_priority']
         is_completed = data['is_completed']
-        msg = utils.db_update_task(id_user, title, description, end_date, start_date, time, id_priority, is_completed, usuarios_user_id)
+        msg, is_ok = utils.db_update_task(task_id, title, description, end_date, start_date, time, id_priority, is_completed)
     elif request.method == 'GET':
         msg = 'Actualiza una tarea'
-    return {
-        "code": 200,
-        "msg": msg
-    }    
+    if is_ok == True:
+        return {
+            "code": 200,
+            "msg": msg
+        }    
+    else:
+        return {
+            "code": 404,
+            "msg": msg
+        }, 404    
 
 
-@app.route(f'{PATH_BASE_API}/task/delete/<int:usuarios_user_id>/<int:id_user>', methods=['GET', 'DELETE'])
-def delete_task(usuarios_user_id, id_user):
+@app.route(f'{PATH_BASE_API}/task/delete/<int:task_id>', methods=['DELETE', 'GET'])
+def delete_task(task_id):
     """Funtion to delete a task from the database
     Parameters
     ----------
-    id_user: int
-        Id user founded in table task
-    usuarios_user_id: int
-        Id user founded in table user
+    task_id: int
+        Id of task founded in table task
     ---------
     Return
     ---------
@@ -187,17 +228,23 @@ def delete_task(usuarios_user_id, id_user):
         A json with info about the delete
     """
     if request.method == 'DELETE':
-        msg = utils.db_delete_task(usuarios_user_id, id_user)
+        msg, is_ok = utils.db_delete_task(task_id)
     elif request.method == 'GET':
         msg = 'Elimina una tarea'
-    return {
-        "code": 200,
-        "msg": msg
-    }
+    if is_ok == True:
+        return {
+            "code": 200,
+            "msg": msg
+        }
+    else:
+        return {
+            "code": 404,
+            "msg": msg
+        }, 404
 
 
 if __name__ == '__main__':
-    app.run()
+    app.run(debug=True)
 
 
 

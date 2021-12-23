@@ -15,7 +15,6 @@ except Exception as err:
     print(err)
 
 
-#Crea el usuario en la database
 def db_create_user(name, last_name, email, password, confirm_password, created):
     """Function to create a new user and save it into the database
     Parameters
@@ -51,7 +50,7 @@ def db_create_user(name, last_name, email, password, confirm_password, created):
     return msg
 
 
-def db_create_task(title, description, end_date, start_date, time, id_priority, is_completed, user_user_id):
+def db_create_task(title, description, end_date, start_date, time, id_priority, is_completed, users_user_id):
     """Function to create a new task and savi it into the databse
     Parameters
     --------------------------------
@@ -69,7 +68,7 @@ def db_create_task(title, description, end_date, start_date, time, id_priority, 
         Id of priority
     is_completed: bool, optional
         Flag use to verify if the task is completed or not (default is False)
-    user_user_id: int
+    users_user_id: int
         Id of user founded in user table
     --------------------------------
     Return
@@ -79,7 +78,7 @@ def db_create_task(title, description, end_date, start_date, time, id_priority, 
     """
     try:
         query = ("INSERT INTO `task` VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)")
-        parameters = (None, title, description, end_date, start_date, time, is_completed, id_priority, user_user_id)
+        parameters = (None, title, description, end_date, start_date, time, is_completed, id_priority, users_user_id)
         cur.execute(query, parameters)
         conn.commit()
         msg = 'Nueva tarea creada'
@@ -118,14 +117,70 @@ def db_select_user(email, password):
         msg = 'Usuario no registrado'
         is_ok = False
     return msg, is_ok
+
+
+def db_get_task(task_id):
+    """Function to obtain a task of the user from the database
+    Parameters
+    --------------------------------
+    task_id: int
+        Id of task founded in task table
+    --------------------------------
+    Return
+    --------------------------------
+    data: list
+        A list with a tuple of a task
+    """
+    try:
+        query = "SELECT * FROM `task` WHERE `task_id` = %s"
+        parameters = (task_id,)
+        cur.execute(query, parameters)
+        data = cur.fetchall()
+        return data
+    except Exception as err:
+        print(err)
     
 
-def db_update_task(task_id, title, description, end_date, start_date, time, id_priority, is_completed, user_user_id):
+def db_get_tasks(users_user_id):
+    """Function to obtain all tasks of the user from the database
+    Parameters
+    --------------------------------
+    user_user_id: int
+        Id of user founded in user table
+    --------------------------------
+    Return
+    --------------------------------
+    data: list
+        A list with tuples of tasks
+    """
+    try:
+        query = "SELECT * FROM `task` WHERE `users_user_id` = %s"
+        parameters = (users_user_id,)
+        cur.execute(query, parameters)
+        data = cur.fetchall()
+        return data
+    except Exception as err:
+        print(err)
+
+
+def db_get_id_task(task_id):
+    query = "SELECT `task_id` FROM `task` WHERE `task_id` = %s"
+    parameter = (task_id,)
+    cur.execute(query, parameter)
+    tpl = cur.fetchone()
+    print(tpl)
+    if tpl != None:
+        return tpl
+    else:
+        return []
+
+
+def db_update_task(task_id, title, description, end_date, start_date, time, id_priority, is_completed):
     """Function to update task by task index in the database
     Parameters
     --------------------------------
-    id_user: str
-        Id of user founded in task table
+    task_id: str
+        Id of task founded in task table
     title: str
         New title of the task
     description: str
@@ -140,70 +195,50 @@ def db_update_task(task_id, title, description, end_date, start_date, time, id_p
         New id of priority
     is_completed: bool
         Actualization of if the task is completed or not 
-    user_user_id: int
-        Id of user founded in user table
     --------------------------------
     Return
     --------------------------------
     msg: str
         A confirmation message    
     """
-    try:
-        query = "UPDATE `task` SET `title` = %s, `description` = %s, `end_date` = %s, `start_date` = %s, `created_time` = %s, `is_complete` = %s, `priority_priority_id` = %s WHERE `task_id` = %s AND `users_user_id`= %s"
-        parameters = (title, description, end_date, start_date, time, is_completed, id_priority, task_id, user_user_id)
+    tpl = db_get_id_task(task_id)
+    if task_id in tpl:
+        query = "UPDATE `task` SET `title` = %s, `description` = %s, `end_date` = %s, `start_date` = %s, `created_time` = %s, `is_complete` = %s, `priority_priority_id` = %s WHERE `task_id` = %s"
+        parameters = (title, description, end_date, start_date, time, is_completed, id_priority, task_id)
         cur.execute(query, parameters)
         conn.commit()
         msg = 'Tarea actualizada'
-    except:
-        msg = 'Actualización errónea'
-    return msg
+        is_ok = True
+    else:
+        msg = 'Tarea no encontrada'
+        is_ok = False
+    return msg, is_ok
 
 
-def db_get_tasks(user_user_id):
-    """Function to obtain all tasks of the user from the database
-    Parameters
-    --------------------------------
-    user_user_id: int
-        Id of user founded in user table
-    --------------------------------
-    Return
-    --------------------------------
-    data: list
-        A list with tuples of tasks
-    """
-    try:
-        query = "SELECT * FROM `task` WHERE `users_user_id` = %s"
-        parameters = (user_user_id,)
-        cur.execute(query, parameters)
-        data = cur.fetchall()
-        return data
-    except Exception as err:
-        print(err)
-        
-
-def db_delete_task(user_user_id, task_id):
+def db_delete_task(task_id):
     """Function to delete a task from the database
     Parameters
     --------------------------------
-    user_user_id: int
-        Id of user founded in user table
     task_id: int
-        Id of user founded in task table
+        Id of task founded in task table
     --------------------------------
     Return
     --------------------------------
     msg: str
         A confirmation message    
     """
-    try:
-        query = "DELETE FROM `task` WHERE `users_user_id` = %s AND `task_id` = %s"
-        parameters = (user_user_id, task_id)
+    tpl = db_get_id_task(task_id)
+    if task_id in tpl:
+        query = "DELETE FROM `task` WHERE `task_id` = %s"
+        parameters = (task_id,)
         cur.execute(query, parameters)
         conn.commit()
         msg = 'Tarea eliminada'
-    except:
-        msg = 'Error al eliminar'
-    return msg
+        is_ok = True
+    else:
+        msg = 'Tarea no encontrada'
+        is_ok = False
+    return msg, is_ok
 
 
 
