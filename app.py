@@ -70,12 +70,12 @@ def create_user():
     }
 
 
-@app.route(f'{PATH_BASE_API}/task/create/<int:usuarios_user_id>', methods=['POST', 'GET'])
-def create_task(usuarios_user_id):
+@app.route(f'{PATH_BASE_API}/task/create/<int:users_user_id>', methods=['POST', 'GET'])
+def create_task(users_user_id):
     """Funtion to recive a json with title, description, end day, start day, time, id priority, if is completed and send it to the database
     Parameters
     ----------
-    usuarios_user_id: int
+    users_user_id: int
         Id user founded in table user
     ---------
     Return
@@ -92,16 +92,22 @@ def create_task(usuarios_user_id):
         time = data['time']
         id_priority = data['id_priority']
         is_completed = data['is_completed']
-        msg = utils.db_create_task(title, description, end_date, start_date, time, id_priority, is_completed, usuarios_user_id)
+        msg, is_ok = utils.db_create_task(title, description, end_date, start_date, time, id_priority, is_completed, users_user_id)
     elif request.method == 'GET': 
         msg = 'Crea una nueva tarea'
-    return {
-        "code": 200,
-        "msg": msg
-    }
+    if is_ok == True:
+        return {
+            "code": 200,
+            "msg": msg
+        }
+    else:
+        return {
+            "code": 404,
+            "msg": msg
+        }, 404
 
 
-@app.route(f'{PATH_BASE_API}/task/show/<int:task_id>', methods=['GET'])
+@app.route(f'{PATH_BASE_API}/task/details/<int:task_id>', methods=['GET'])
 def show_task(task_id):
     """Funtion to recive a task from the database
     Parameters
@@ -156,7 +162,7 @@ def show_tasks(users_user_id):
     if lst == []:
         return {
             "code": 404,
-            "msg" : 'Tarea no encontrada'
+            "msg" : 'Tareas no encontradas'
         }, 404
     else:
         for data in lst:
@@ -244,7 +250,7 @@ def delete_task(task_id):
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run()
 
 
 

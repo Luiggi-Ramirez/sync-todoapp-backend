@@ -76,15 +76,18 @@ def db_create_task(title, description, end_date, start_date, time, id_priority, 
     msg: str
         A confirmation message    
     """
-    try:
+    tpl = db_get_id_user(users_user_id)
+    if users_user_id in tpl:
         query = ("INSERT INTO `task` VALUES (%s, %s, %s, %s, %s, %s, %s, %s, %s)")
         parameters = (None, title, description, end_date, start_date, time, is_completed, id_priority, users_user_id)
         cur.execute(query, parameters)
         conn.commit()
         msg = 'Nueva tarea creada'
-    except Exception as err:
-        msg = 'Error al crear tarea'
-    return msg
+        is_ok = True
+    else:
+        msg = 'Usuario no encontrado'
+        is_ok = False
+    return msg, is_ok
 
 
 def db_select_user(email, password):
@@ -163,12 +166,22 @@ def db_get_tasks(users_user_id):
         print(err)
 
 
+def db_get_id_user(user_id):
+    query = "SELECT `user_id` FROM `users` WHERE `user_id` = %s"
+    parameter = (user_id,)
+    cur.execute(query, parameter)
+    tpl = cur.fetchone()
+    if tpl != None:
+        return tpl
+    else:
+        return []
+
+
 def db_get_id_task(task_id):
     query = "SELECT `task_id` FROM `task` WHERE `task_id` = %s"
     parameter = (task_id,)
     cur.execute(query, parameter)
     tpl = cur.fetchone()
-    print(tpl)
     if tpl != None:
         return tpl
     else:
